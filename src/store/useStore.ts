@@ -5,6 +5,8 @@ export type Language = 'en' | 'la';
 
 export type PanelPosition = 'bottom' | 'right' | 'left' | 'top';
 
+export type CameraFocus = 'body' | 'arm';
+
 export type LayerVisibility = Record<StructureCategory, boolean>;
 
 export type AppState = {
@@ -23,9 +25,12 @@ export type AppState = {
   cameraResetToken: number;
   /** Where the info panel docks. */
   panelPosition: PanelPosition;
+  /** Which part of the model the camera frames. */
+  focus: CameraFocus;
 
   select: (id: string | null) => void;
   setPanelPosition: (position: PanelPosition) => void;
+  setFocus: (focus: CameraFocus) => void;
   showOnlyLayer: (category: StructureCategory) => void;
   showAllLayers: () => void;
   hover: (id: string | null) => void;
@@ -63,9 +68,11 @@ export const useStore = create<AppState>((set) => ({
   reducedMotion: false,
   cameraResetToken: 0,
   panelPosition: 'bottom',
+  focus: 'body',
 
   select: (id) => set({ selectedId: id, isolate: false }),
   setPanelPosition: (position) => set({ panelPosition: position }),
+  setFocus: (focus) => set((s) => ({ focus, cameraResetToken: s.cameraResetToken + 1 })),
   showOnlyLayer: (category) =>
     set(() => ({
       layers: {

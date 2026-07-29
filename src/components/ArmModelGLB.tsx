@@ -56,22 +56,18 @@ export function ArmModelGLB() {
   const visible = (category: StructureCategory, id: string): boolean =>
     layers[category] && !(isolate && selectedId !== null && selectedId !== id);
 
-  // Extract geometries, generate smooth normals (the source has none), compute
-  // an offset that centres the whole arm for framing, and re-centre the muscle
-  // meshes on their own centroid so they can be scaled (bulge) about themselves.
-  const { geos, center, bicepsCenter, tricepsCenter } = useMemo(() => {
+  // Extract geometries, generate smooth normals (the source has none) and
+  // re-centre the muscle meshes on their own centroid so they can be scaled
+  // (bulge) about themselves. Geometry stays in the shared body coordinate
+  // frame so it aligns with the whole-body skeleton.
+  const { geos, bicepsCenter, tricepsCenter } = useMemo(() => {
     const g: Record<string, THREE.BufferGeometry> = {};
-    const box = new THREE.Box3();
     for (const key of Object.values(NODE)) {
       const geo = nodes[key].geometry.clone();
       geo.computeVertexNormals();
       geo.computeBoundingBox();
       g[key] = geo;
-      box.union(geo.boundingBox!);
     }
-    const c = new THREE.Vector3();
-    box.getCenter(c);
-
     const bc = new THREE.Vector3();
     const tc = new THREE.Vector3();
     g[NODE.biceps].boundingBox!.getCenter(bc);
@@ -80,7 +76,7 @@ export function ArmModelGLB() {
     // at that centroid, so scaling the group bulges the muscle in place.
     g[NODE.biceps].translate(-bc.x, -bc.y, -bc.z);
     g[NODE.triceps].translate(-tc.x, -tc.y, -tc.z);
-    return { geos: g, center: c, bicepsCenter: bc, tricepsCenter: tc };
+    return { geos: g, bicepsCenter: bc, tricepsCenter: tc };
   }, [nodes]);
 
   useEffect(() => {
@@ -128,9 +124,10 @@ export function ArmModelGLB() {
   ];
 
   return (
-    // Outer group recentres the arm on the origin. Its local origin stays at
-    // the elbow, so the forearm subgroup still hinges about the joint.
-    <group position={[-center.x, -center.y, -center.z]}>
+    // Shared body coordinate frame: the elbow is at the local origin, so the
+    // forearm subgroup hinges about the joint and everything aligns with the
+    // whole-body skeleton.
+    <group>
       {visible('bone', 'humerus') && (
         <SelectablePart structureId="humerus" category="bone" color="#e7e2d3">
           <primitive object={geos[NODE.humerus]} attach="geometry" />

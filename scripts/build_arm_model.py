@@ -96,7 +96,8 @@ for name, m in parts.items():
 
 # Ensure the biceps sits on the anterior (+Z) side; if not, spin 180 deg
 # about Y (a proper rotation, keeps the right arm a right arm).
-if parts["muscle_biceps"].vertices[:, 2].mean() < 0:
+flip = bool(parts["muscle_biceps"].vertices[:, 2].mean() < 0)
+if flip:
     for m in parts.values():
         m.vertices[:, 0] *= -1
         m.vertices[:, 2] *= -1
@@ -107,6 +108,25 @@ height = all_v[:, 1].max() - all_v[:, 1].min()
 scale = 4.0 / height
 for m in parts.values():
     m.vertices *= scale
+
+# Persist the exact transform so the whole-body skeleton can be placed in the
+# same coordinate frame (see scripts/build_skeleton.py).
+import json
+
+transform_path = os.path.join(os.path.dirname(__file__), "arm_transform.json")
+with open(transform_path, "w") as fh:
+    json.dump(
+        {
+            "R": R.tolist(),
+            "pivot": pivot.tolist(),
+            "flip": flip,
+            "scale": float(scale),
+            "comment": "v' = scale * flip(R @ (v - pivot)); flip negates x,z.",
+        },
+        fh,
+        indent=2,
+    )
+print(f"Wrote {transform_path}")
 
 scene = trimesh.Scene(geometry={name: m for name, m in parts.items()})
 

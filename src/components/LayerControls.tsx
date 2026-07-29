@@ -28,11 +28,36 @@ export function LayerControls() {
   const resetView = useStore((s) => s.resetView);
   const panelPosition = useStore((s) => s.panelPosition);
   const setPanelPosition = useStore((s) => s.setPanelPosition);
+  const focus = useStore((s) => s.focus);
+  const setFocus = useStore((s) => s.setFocus);
 
   const allOn = LAYERS.every(({ category }) => layers[category]);
 
   return (
     <div className="layer-controls">
+      {/* Camera focus: whole body vs. zoomed to the arm. */}
+      <div className="layer-group" role="group" aria-label="Camera view">
+        <span className="layer-group-label">View</span>
+        <div className="chip-row">
+          <button
+            type="button"
+            className={`chip ${focus === 'body' ? 'chip-active' : ''}`}
+            aria-pressed={focus === 'body'}
+            onClick={() => setFocus('body')}
+          >
+            Whole body
+          </button>
+          <button
+            type="button"
+            className={`chip ${focus === 'arm' ? 'chip-active' : ''}`}
+            aria-pressed={focus === 'arm'}
+            onClick={() => setFocus('arm')}
+          >
+            Arm
+          </button>
+        </div>
+      </div>
+
       <div className="control-row">
         <button type="button" className="btn btn-sm" onClick={resetCamera}>
           Reset view

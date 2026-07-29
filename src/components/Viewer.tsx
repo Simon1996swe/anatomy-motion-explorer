@@ -4,23 +4,35 @@ import { OrbitControls, Html } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { ArmModel } from './ArmModel';
 import { ArmModelGLB } from './ArmModelGLB';
+import { SkeletonModel } from './SkeletonModel';
 import { ModelErrorBoundary } from './ModelErrorBoundary';
 import { useStore } from '../store/useStore';
 
-const CAMERA_START: [number, number, number] = [2.6, 0.6, 7.5];
-const CAMERA_TARGET: [number, number, number] = [0, 0, 0];
+// Camera presets in the shared body coordinate frame (elbow at the origin).
+const VIEWS = {
+  body: {
+    position: [3, 0.5, 19] as [number, number, number],
+    target: [1, -1.5, 1.6] as [number, number, number],
+  },
+  arm: {
+    position: [2.5, 0.9, 7.6] as [number, number, number],
+    target: [-0.1, 0.2, 0.1] as [number, number, number],
+  },
+};
 
 function CameraRig() {
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const cameraResetToken = useStore((s) => s.cameraResetToken);
+  const focus = useStore((s) => s.focus);
 
   useEffect(() => {
     const controls = controlsRef.current;
     if (!controls) return;
-    controls.object.position.set(...CAMERA_START);
-    controls.target.set(...CAMERA_TARGET);
+    const view = VIEWS[focus];
+    controls.object.position.set(...view.position);
+    controls.target.set(...view.target);
     controls.update();
-  }, [cameraResetToken]);
+  }, [cameraResetToken, focus]);
 
   return (
     <OrbitControls
@@ -30,9 +42,9 @@ function CameraRig() {
       // Damping needs a continuous render loop; disabled so on-demand
       // rendering can idle. Each interaction still invalidates and repaints.
       enableDamping={false}
-      minDistance={3}
-      maxDistance={16}
-      target={CAMERA_TARGET}
+      minDistance={2}
+      maxDistance={45}
+      target={VIEWS.body.target}
     />
   );
 }
@@ -64,7 +76,7 @@ export function Viewer() {
       // On-demand rendering: only repaint on interaction/animation, not every
       // frame. Keeps idle GPU/CPU near zero (fixes laptop lag & heat).
       frameloop="demand"
-      camera={{ position: CAMERA_START, fov: 42 }}
+      camera={{ position: VIEWS.body.position, fov: 42, near: 0.1, far: 200 }}
       dpr={[1, 1.75]}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
     >
@@ -75,6 +87,12 @@ export function Viewer() {
       <directionalLight position={[0, -3, 4]} intensity={0.35} />
       <hemisphereLight args={['#cfe0ff', '#20293d', 0.7]} />
       <BackgroundDeselect />
+      {/* Whole-body skeleton context; failure here shouldn't break the arm. */}
+      <ModelErrorBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <SkeletonModel />
+        </Suspense>
+      </ModelErrorBoundary>
       <ModelErrorBoundary fallback={<ArmModel />}>
         <Suspense fallback={<Loader />}>
           <ArmModelGLB />

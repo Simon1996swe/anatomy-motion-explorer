@@ -18,6 +18,13 @@ Citation:
   https://doi.org/10.1093/nar/gkn613
   Data archive DOI: http://doi.org/10.18908/lsdba.nbdc00837-000
 
+Files:
+  arm.glb      — right-arm region (bones + biceps/triceps), selectable/animated
+  skeleton.glb — whole-body skeleton context (all bones except the right
+                 humerus/radius/ulna, which arm.glb provides). Built by
+                 scripts/build_skeleton.py using the same transform as the arm,
+                 decimated (meshoptimizer) and meshopt-compressed.
+
 Source parts used (right arm), by FMA id:
   bone_humerus   : FMA23130
   bone_radius    : FMA23464
