@@ -147,6 +147,7 @@ a { color: var(--accent); }
 .skin-slider { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.3rem; }
 .skin-slider input[type=range], .scrub input, .anim-transport input[type=range] { width: 100%; height: 28px; }
 .lang-toggle { display: flex; gap: 0.25rem; }
+.model-credit { margin: 0.2rem 0 0; font-size: 0.72rem; color: var(--muted); line-height: 1.4; }
 
 /* Info panel content */
 .info-empty { color: var(--muted); }

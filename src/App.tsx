@@ -63,6 +63,17 @@ export default function App() {
             <LanguageToggle />
             <SearchBar />
             <LayerControls />
+            <p className="model-credit">
+              3D model derived from{' '}
+              <a
+                href="https://lifesciencedb.jp/bp3d/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                BodyParts3D
+              </a>{' '}
+              © The Database Center for Life Science, CC BY-SA 2.1 JP.
+            </p>
           </div>
         )}
       </div>

@@ -17,16 +17,33 @@ checked and recorded.
 - **Attribution text:** None required
 - **Redistribution requirements:** None
 
-### 3D model (arm prototype)
-- **Asset name:** Placeholder arm geometry (humerus, radius, ulna, biceps,
-  triceps, skin sleeve)
+### 3D model — arm (`public/models/arm.glb`)
+- **Asset name:** Elbow-region arm (humerus, radius, ulna, biceps brachii,
+  triceps brachii)
+- **Source URL:** https://github.com/Kevin-Mattheus-Moerman/BodyParts3D
+  (mirror of BodyParts3D / Anatomography, http://lifesciencedb.jp/bp3d/)
+- **Creator:** The Database Center for Life Science (BodyParts3D)
+- **Licence:** **CC Attribution-Share Alike 2.1 Japan (CC BY-SA 2.1 JP)** for the
+  3D content. (The mirror repository's own code is MIT.)
+- **Downloaded version or date:** BodyParts3D v3.0 (20110915), retrieved
+  2026-07-29. Parts by FMA id: 23130, 23464, 23467, 37684, 37686, 37695, 37697,
+  37699.
+- **Modifications:** Merged into five named meshes; reoriented upright with the
+  elbow at the origin; recentred, scaled, decimated (meshoptimizer) and exported
+  to glTF/GLB. Reproducible via `scripts/build_arm_model.py`.
+- **Attribution text:** "BodyParts3D, (c) The Database Center for Life Science
+  licensed under CC Attribution-Share Alike 2.1 Japan." (also in
+  `public/models/ATTRIBUTION.txt`, shown in-app via the model's source note).
+- **Redistribution requirements:** Share-alike — this derivative is distributed
+  under the same CC BY-SA 2.1 JP licence, with attribution retained.
+
+### 3D model — placeholder fallback
+- **Asset name:** Placeholder arm geometry (primitives)
 - **Source URL:** N/A — generated at runtime in `src/components/ArmModel.tsx`
 - **Creator:** This project
 - **Licence:** Original work, project-owned
-- **Downloaded version or date:** N/A
-- **Modifications:** N/A
-- **Attribution text:** None required
-- **Redistribution requirements:** None
+- **Modifications:** N/A · **Attribution text:** None · **Redistribution:** None
+- Used only as a fallback if `arm.glb` fails to load.
 
 ## Content references (text)
 

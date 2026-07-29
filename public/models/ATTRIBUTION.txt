@@ -1,0 +1,34 @@
+arm.glb — attribution and licence
+==================================
+
+This 3D model is derived from BodyParts3D.
+
+  BodyParts3D, (c) The Database Center for Life Science
+  licensed under CC Attribution-Share Alike 2.1 Japan.
+  http://lifesciencedb.jp/bp3d/info_en/license/index.html
+
+Obtained via the mirror:
+  https://github.com/Kevin-Mattheus-Moerman/BodyParts3D
+  (3D content: CC BY-SA 2.1 JP; repository code: MIT)
+
+Citation:
+  Mitsuhashi N, Fujieda K, Tamura T, Kawamoto S, Takagi T, Okubo K.
+  BodyParts3D: 3D structure database for anatomical concepts.
+  Nucleic Acids Res. 2009 Jan;37(Database issue):D782-5.
+  https://doi.org/10.1093/nar/gkn613
+  Data archive DOI: http://doi.org/10.18908/lsdba.nbdc00837-000
+
+Source parts used (right arm), by FMA id:
+  bone_humerus   : FMA23130
+  bone_radius    : FMA23464
+  bone_ulna      : FMA23467
+  muscle_biceps  : FMA37684 + FMA37686 (short + long head)
+  muscle_triceps : FMA37695 + FMA37697 + FMA37699 (medial + lateral + long head)
+
+Modifications:
+  Parts merged into five named meshes; reoriented upright with the elbow at the
+  origin; recentred and uniformly scaled; decimated (meshoptimizer) and
+  re-exported as glTF/GLB. See scripts/build_arm_model.py.
+
+As a derivative, this model is distributed under the same licence:
+CC Attribution-Share Alike 2.1 Japan (CC BY-SA 2.1 JP).

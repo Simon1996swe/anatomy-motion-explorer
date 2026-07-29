@@ -3,6 +3,8 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { ArmModel } from './ArmModel';
+import { ArmModelGLB } from './ArmModelGLB';
+import { ModelErrorBoundary } from './ModelErrorBoundary';
 import { useStore } from '../store/useStore';
 
 const CAMERA_START: [number, number, number] = [2.6, 0.6, 7.5];
@@ -72,10 +74,12 @@ export function Viewer() {
       <directionalLight position={[-4, 2, -3]} intensity={0.6} />
       <directionalLight position={[0, -3, 4]} intensity={0.35} />
       <hemisphereLight args={['#cfe0ff', '#20293d', 0.7]} />
-      <Suspense fallback={<Loader />}>
-        <BackgroundDeselect />
-        <ArmModel />
-      </Suspense>
+      <BackgroundDeselect />
+      <ModelErrorBoundary fallback={<ArmModel />}>
+        <Suspense fallback={<Loader />}>
+          <ArmModelGLB />
+        </Suspense>
+      </ModelErrorBoundary>
       <CameraRig />
     </Canvas>
   );
