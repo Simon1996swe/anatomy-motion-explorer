@@ -25,7 +25,9 @@ function CameraRig() {
       ref={controlsRef}
       makeDefault
       enablePan
-      enableDamping
+      // Damping needs a continuous render loop; disabled so on-demand
+      // rendering can idle. Each interaction still invalidates and repaints.
+      enableDamping={false}
       minDistance={3}
       maxDistance={16}
       target={CAMERA_TARGET}
@@ -57,8 +59,11 @@ function BackgroundDeselect() {
 export function Viewer() {
   return (
     <Canvas
+      // On-demand rendering: only repaint on interaction/animation, not every
+      // frame. Keeps idle GPU/CPU near zero (fixes laptop lag & heat).
+      frameloop="demand"
       camera={{ position: CAMERA_START, fov: 42 }}
-      dpr={[1, 2]}
+      dpr={[1, 1.75]}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
     >
       <color attach="background" args={['#0b1220']} />

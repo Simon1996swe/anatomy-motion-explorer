@@ -1,34 +1,46 @@
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
+import { useEffect, useRef } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useStore } from '../store/useStore';
 import { SelectablePart } from './SelectablePart';
 import type { StructureCategory } from '../types/anatomy';
 
-/** Maximum flexion angle of the elbow, in radians (~140 degrees). */
-const MAX_FLEX = 2.45;
+/** Maximum flexion angle of the elbow, in radians (~145°, realistic range). */
+const MAX_FLEX = 2.53;
+/** Seconds for one half-swing (extend <-> fully flexed). */
+const HALF_SWING = 1.5;
+
+/** Smooth ease-in-out (sine) over a linear phase in [0, 1]. */
+function easeInOut(t: number): number {
+  return 0.5 - 0.5 * Math.cos(Math.PI * t);
+}
 
 /**
  * Placeholder arm built from primitive geometry.
- * The architecture (named nodes, category-based layers, per-part selection)
- * is designed so these primitives can later be swapped for GLB meshes without
- * changing the surrounding UI or data model.
+ *
+ * Pose is derived from `elbowAngle` (0 = extended, 1 = fully flexed) and applied
+ * declaratively, so any change repaints under on-demand rendering. A frame loop
+ * runs only while an animation is playing, driving a smooth ping-pong curl.
+ *
+ * The architecture (named nodes, category layers, per-part selection) is built
+ * so these primitives can later be swapped for GLB meshes without changing the
+ * surrounding UI or data model.
  */
 export function ArmModel() {
-  const forearmRef = useRef<THREE.Group>(null);
-  const bicepsRef = useRef<THREE.Group>(null);
-  const tricepsRef = useRef<THREE.Group>(null);
-
   const isPlaying = useStore((s) => s.isPlaying);
   const activeAnimationId = useStore((s) => s.activeAnimationId);
   const reducedMotion = useStore((s) => s.reducedMotion);
   const setElbowAngle = useStore((s) => s.setElbowAngle);
   const pause = useStore((s) => s.pause);
+  const elbowAngle = useStore((s) => s.elbowAngle);
 
   const layers = useStore((s) => s.layers);
   const isolate = useStore((s) => s.isolate);
   const selectedId = useStore((s) => s.selectedId);
   const skinOpacity = useStore((s) => s.skinOpacity);
+
+  const invalidate = useThree((s) => s.invalidate);
+  const phaseRef = useRef(0); // linear 0..1 progress of the current swing
+  const dirRef = useRef(1); // +1 flexing, -1 extending
 
   // Plain helper (not a hook): a part is visible when its layer is on and,
   // while isolating, it is the selected part.
@@ -37,40 +49,54 @@ export function ArmModel() {
 
   const skinVisible = visible('skin', 'skin-arm');
 
+  // Kick the frame loop when playback starts and sync the swing phase to the
+  // clip (flexion starts extended and curls up; extension starts flexed).
+  useEffect(() => {
+    if (isPlaying && !reducedMotion) {
+      const startFlexed = activeAnimationId === 'elbow-extension';
+      phaseRef.current = startFlexed ? 1 : 0;
+      dirRef.current = startFlexed ? -1 : 1;
+      invalidate();
+    }
+  }, [isPlaying, activeAnimationId, reducedMotion, invalidate]);
+
   useFrame((_, delta) => {
-    const { elbowAngle } = useStore.getState();
-    if (isPlaying && activeAnimationId) {
-      const target = activeAnimationId === 'elbow-extension' ? 0 : 1;
-      if (reducedMotion) {
-        setElbowAngle(target);
-        pause();
-      } else {
-        const step = Math.min(delta * 0.9, 0.05);
-        const next = THREE.MathUtils.lerp(elbowAngle, target, step * 8);
-        if (Math.abs(next - target) < 0.01) {
-          setElbowAngle(target);
-          pause();
-        } else {
-          setElbowAngle(next);
-        }
-      }
+    if (!isPlaying) return;
+
+    if (reducedMotion) {
+      // Respect reduced motion: jump straight to the end pose, no tweening.
+      setElbowAngle(activeAnimationId === 'elbow-extension' ? 0 : 1);
+      pause();
+      return;
     }
 
-    // Apply pose from angle (also runs while paused so scrubbing works).
-    const angle = useStore.getState().elbowAngle;
-    if (forearmRef.current) {
-      forearmRef.current.rotation.x = angle * MAX_FLEX;
+    phaseRef.current += (dirRef.current * Math.min(delta, 0.05)) / HALF_SWING;
+    if (phaseRef.current >= 1) {
+      phaseRef.current = 1;
+      dirRef.current = -1;
+    } else if (phaseRef.current <= 0) {
+      phaseRef.current = 0;
+      dirRef.current = 1;
     }
-    // Muscles change shape during movement: biceps shortens & bulges on
-    // flexion; triceps does the opposite.
-    if (bicepsRef.current) {
-      bicepsRef.current.scale.set(1 + angle * 0.5, 1 - angle * 0.18, 1 + angle * 0.5);
-    }
-    if (tricepsRef.current) {
-      const ext = 1 - angle;
-      tricepsRef.current.scale.set(1 + ext * 0.4, 1 - ext * 0.15, 1 + ext * 0.4);
-    }
+    setElbowAngle(easeInOut(phaseRef.current));
+    invalidate(); // request the next frame while playing
   });
+
+  // --- Pose derived from the current angle -------------------------------
+  const forearmRot = elbowAngle * MAX_FLEX;
+  // Biceps shortens and bulges as the elbow flexes.
+  const bicepsScale: [number, number, number] = [
+    1 + elbowAngle * 0.32,
+    1 - elbowAngle * 0.14,
+    1 + elbowAngle * 0.32,
+  ];
+  // Triceps does the opposite: fuller when the arm is extended.
+  const ext = 1 - elbowAngle;
+  const tricepsScale: [number, number, number] = [
+    1 + ext * 0.22,
+    1 - ext * 0.1,
+    1 + ext * 0.22,
+  ];
 
   return (
     // Shift up so the arm's geometric centre sits at the origin for framing.
@@ -86,24 +112,24 @@ export function ArmModel() {
 
       {/* Biceps: anterior (front, +z). */}
       {visible('muscle', 'biceps-brachii') && (
-        <group ref={bicepsRef} position={[0, 1, 0.22]}>
+        <group position={[0, 1, 0.22]} scale={bicepsScale}>
           <SelectablePart structureId="biceps-brachii" category="muscle" color="#c0392b">
-            <capsuleGeometry args={[0.13, 1.1, 6, 14]} />
+            <capsuleGeometry args={[0.13, 1.1, 8, 16]} />
           </SelectablePart>
         </group>
       )}
 
       {/* Triceps: posterior (back, -z). */}
       {visible('muscle', 'triceps-brachii') && (
-        <group ref={tricepsRef} position={[0, 1, -0.22]}>
+        <group position={[0, 1, -0.22]} scale={tricepsScale}>
           <SelectablePart structureId="triceps-brachii" category="muscle" color="#a93226">
-            <capsuleGeometry args={[0.14, 1.15, 6, 14]} />
+            <capsuleGeometry args={[0.14, 1.15, 8, 16]} />
           </SelectablePart>
         </group>
       )}
 
-      {/* Forearm assembly pivots at the elbow (origin). */}
-      <group ref={forearmRef} position={[0, 0, 0]}>
+      {/* Forearm assembly pivots at the elbow (origin) around the X axis. */}
+      <group rotation={[forearmRot, 0, 0]}>
         <group position={[0, -1, 0]}>
           {visible('bone', 'radius') && (
             <group position={[0.09, 0, 0.03]}>
@@ -132,7 +158,7 @@ export function ArmModel() {
       {/* Translucent skin sleeve over the upper arm (not selectable). */}
       {skinVisible && (
         <mesh position={[0, 1, 0]}>
-          <capsuleGeometry args={[0.4, 1.7, 6, 16]} />
+          <capsuleGeometry args={[0.4, 1.7, 8, 20]} />
           <meshStandardMaterial
             color="#f3c9a8"
             transparent
