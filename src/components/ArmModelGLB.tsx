@@ -56,9 +56,10 @@ export function ArmModelGLB() {
   const visible = (category: StructureCategory, id: string): boolean =>
     layers[category] && !(isolate && selectedId !== null && selectedId !== id);
 
-  // Extract geometries, generate smooth normals (the source has none) and
-  // compute an offset that centres the whole arm on the origin for framing.
-  const { geos, center } = useMemo(() => {
+  // Extract geometries, generate smooth normals (the source has none), compute
+  // an offset that centres the whole arm for framing, and re-centre the muscle
+  // meshes on their own centroid so they can be scaled (bulge) about themselves.
+  const { geos, center, bicepsCenter, tricepsCenter } = useMemo(() => {
     const g: Record<string, THREE.BufferGeometry> = {};
     const box = new THREE.Box3();
     for (const key of Object.values(NODE)) {
@@ -70,7 +71,16 @@ export function ArmModelGLB() {
     }
     const c = new THREE.Vector3();
     box.getCenter(c);
-    return { geos: g, center: c };
+
+    const bc = new THREE.Vector3();
+    const tc = new THREE.Vector3();
+    g[NODE.biceps].boundingBox!.getCenter(bc);
+    g[NODE.triceps].boundingBox!.getCenter(tc);
+    // Translate muscle geometry to its centroid; the group is then placed back
+    // at that centroid, so scaling the group bulges the muscle in place.
+    g[NODE.biceps].translate(-bc.x, -bc.y, -bc.z);
+    g[NODE.triceps].translate(-tc.x, -tc.y, -tc.z);
+    return { geos: g, center: c, bicepsCenter: bc, tricepsCenter: tc };
   }, [nodes]);
 
   useEffect(() => {
@@ -102,6 +112,20 @@ export function ArmModelGLB() {
   });
 
   const forearmRot = elbowAngle * MAX_FLEX;
+  // Approximate contraction: the biceps shortens (−Y) and bulges (X/Z) as the
+  // elbow flexes; the triceps does the opposite as it extends. This is a visual
+  // suggestion of movement, not a rigged deformation.
+  const ext = 1 - elbowAngle;
+  const bicepsScale: [number, number, number] = [
+    1 + elbowAngle * 0.28,
+    1 - elbowAngle * 0.14,
+    1 + elbowAngle * 0.28,
+  ];
+  const tricepsScale: [number, number, number] = [
+    1 + ext * 0.2,
+    1 - ext * 0.1,
+    1 + ext * 0.2,
+  ];
 
   return (
     // Outer group recentres the arm on the origin. Its local origin stays at
@@ -113,14 +137,18 @@ export function ArmModelGLB() {
         </SelectablePart>
       )}
       {visible('muscle', 'biceps-brachii') && (
-        <SelectablePart structureId="biceps-brachii" category="muscle" color="#b8402f">
-          <primitive object={geos[NODE.biceps]} attach="geometry" />
-        </SelectablePart>
+        <group position={bicepsCenter} scale={bicepsScale}>
+          <SelectablePart structureId="biceps-brachii" category="muscle" color="#b8402f">
+            <primitive object={geos[NODE.biceps]} attach="geometry" />
+          </SelectablePart>
+        </group>
       )}
       {visible('muscle', 'triceps-brachii') && (
-        <SelectablePart structureId="triceps-brachii" category="muscle" color="#9c3526">
-          <primitive object={geos[NODE.triceps]} attach="geometry" />
-        </SelectablePart>
+        <group position={tricepsCenter} scale={tricepsScale}>
+          <SelectablePart structureId="triceps-brachii" category="muscle" color="#9c3526">
+            <primitive object={geos[NODE.triceps]} attach="geometry" />
+          </SelectablePart>
+        </group>
       )}
 
       {/* Forearm bones hinge at the elbow (local origin). */}

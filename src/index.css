@@ -88,18 +88,52 @@ a { color: var(--accent); }
    when a structure is selected, so it fully collapses when unused. */
 .app-info {
   position: absolute;
-  left: 0; right: 0; bottom: 0;
-  max-height: 62dvh;
   overflow-y: auto;
   background: var(--panel);
+  z-index: 9;
+  padding: 0.9rem;
+}
+
+/* Bottom sheet (default) */
+.app-info.pos-bottom {
+  left: 0; right: 0; bottom: 0;
+  max-height: 62dvh;
   border-top: 1px solid var(--line);
   border-radius: 16px 16px 0 0;
-  padding: 0.9rem 0.9rem calc(1rem + env(safe-area-inset-bottom));
-  z-index: 9;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
-  animation: sheet-up 0.25s ease;
+  animation: slide-up 0.25s ease;
 }
-@keyframes sheet-up { from { transform: translateY(30%); opacity: 0.4; } to { transform: translateY(0); opacity: 1; } }
+/* Top sheet */
+.app-info.pos-top {
+  left: 0; right: 0; top: 0;
+  max-height: 62dvh;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0 0 16px 16px;
+  padding-top: calc(0.9rem + env(safe-area-inset-top));
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  animation: slide-down 0.25s ease;
+}
+/* Right rail */
+.app-info.pos-right {
+  top: 0; bottom: 0; right: 0;
+  width: min(380px, 88vw);
+  border-left: 1px solid var(--line);
+  box-shadow: -8px 0 30px rgba(0,0,0,0.4);
+  animation: slide-left 0.25s ease;
+}
+/* Left rail */
+.app-info.pos-left {
+  top: 0; bottom: 0; left: 0;
+  width: min(380px, 88vw);
+  border-right: 1px solid var(--line);
+  box-shadow: 8px 0 30px rgba(0,0,0,0.4);
+  animation: slide-right 0.25s ease;
+}
+@keyframes slide-up { from { transform: translateY(30%); opacity: 0.4; } to { transform: none; opacity: 1; } }
+@keyframes slide-down { from { transform: translateY(-30%); opacity: 0.4; } to { transform: none; opacity: 1; } }
+@keyframes slide-left { from { transform: translateX(20%); opacity: 0.4; } to { transform: none; opacity: 1; } }
+@keyframes slide-right { from { transform: translateX(-20%); opacity: 0.4; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .app-info { animation: none; }
 }
@@ -193,21 +227,10 @@ a { color: var(--accent); }
 }
 .app-loading { padding: 2rem; }
 
-/* Desktop: info panel becomes a right-side rail that slides in when a
-   structure is selected; the viewer keeps the full screen underneath. */
-@media (min-width: 900px) {
-  .app-info {
-    left: auto; right: 0; top: 0; bottom: 0;
-    width: 380px; max-height: none;
-    border-radius: 0; border-top: 0; border-left: 1px solid var(--line);
-    box-shadow: -8px 0 30px rgba(0, 0, 0, 0.4);
-    animation: rail-in 0.25s ease;
-  }
-  @keyframes rail-in { from { transform: translateX(20%); opacity: 0.4; } to { transform: translateX(0); opacity: 1; } }
-}
-@media (min-width: 900px) and (prefers-reduced-motion: reduce) {
-  .app-info { animation: none; }
-}
+/* Layer quick-switch groups */
+.layer-group { margin-top: 0.5rem; }
+.layer-group-label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.3rem; }
+.chip.chip-active { background: var(--accent); color: #07121f; border-color: var(--accent); font-weight: 600; }
 
 /* Admin editor */
 .admin { padding: 1rem; max-width: 1000px; margin: 0 auto; }

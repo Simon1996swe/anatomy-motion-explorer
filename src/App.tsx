@@ -19,6 +19,7 @@ export default function App() {
   const [webgl] = useState(isWebGLAvailable);
   const [controlsOpen, setControlsOpen] = useState(false);
   const selectedId = useStore((s) => s.selectedId);
+  const panelPosition = useStore((s) => s.panelPosition);
 
   // Collapse the menu once a structure is picked, so the model stays central.
   useEffect(() => {
@@ -81,7 +82,7 @@ export default function App() {
       {/* Info panel only mounts when something is selected, so it stays out of
           the way otherwise and the model gets the full screen. */}
       {selectedId && (
-        <aside className="app-info has-selection">
+        <aside className={`app-info pos-${panelPosition}`}>
           <InfoPanel />
         </aside>
       )}

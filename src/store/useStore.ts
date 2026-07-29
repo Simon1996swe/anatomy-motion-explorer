@@ -3,6 +3,8 @@ import type { StructureCategory } from '../types/anatomy';
 
 export type Language = 'en' | 'la';
 
+export type PanelPosition = 'bottom' | 'right' | 'left' | 'top';
+
 export type LayerVisibility = Record<StructureCategory, boolean>;
 
 export type AppState = {
@@ -19,8 +21,13 @@ export type AppState = {
   elbowAngle: number;
   reducedMotion: boolean;
   cameraResetToken: number;
+  /** Where the info panel docks. */
+  panelPosition: PanelPosition;
 
   select: (id: string | null) => void;
+  setPanelPosition: (position: PanelPosition) => void;
+  showOnlyLayer: (category: StructureCategory) => void;
+  showAllLayers: () => void;
   hover: (id: string | null) => void;
   toggleIsolate: () => void;
   setLanguage: (language: Language) => void;
@@ -55,8 +62,21 @@ export const useStore = create<AppState>((set) => ({
   elbowAngle: 0,
   reducedMotion: false,
   cameraResetToken: 0,
+  panelPosition: 'bottom',
 
   select: (id) => set({ selectedId: id, isolate: false }),
+  setPanelPosition: (position) => set({ panelPosition: position }),
+  showOnlyLayer: (category) =>
+    set(() => ({
+      layers: {
+        skin: category === 'skin',
+        muscle: category === 'muscle',
+        bone: category === 'bone',
+        nerve: category === 'nerve',
+        fascia: category === 'fascia',
+      },
+    })),
+  showAllLayers: () => set({ layers: { ...defaultLayers } }),
   hover: (id) => set({ hoveredId: id }),
   toggleIsolate: () => set((s) => ({ isolate: !s.isolate })),
   setLanguage: (language) => set({ language }),

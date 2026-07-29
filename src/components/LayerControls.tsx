@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import type { StructureCategory } from '../types/anatomy';
+import type { PanelPosition } from '../store/useStore';
 
-const LAYER_LABELS: { category: StructureCategory; label: string }[] = [
+const LAYERS: { category: StructureCategory; label: string }[] = [
   { category: 'skin', label: 'Skin' },
   { category: 'muscle', label: 'Muscles' },
   { category: 'bone', label: 'Bones' },
@@ -10,61 +10,112 @@ const LAYER_LABELS: { category: StructureCategory; label: string }[] = [
   { category: 'fascia', label: 'Fascia' },
 ];
 
+const POSITIONS: { value: PanelPosition; label: string }[] = [
+  { value: 'bottom', label: 'Bottom' },
+  { value: 'right', label: 'Right' },
+  { value: 'left', label: 'Left' },
+  { value: 'top', label: 'Top' },
+];
+
 export function LayerControls() {
-  const [open, setOpen] = useState(false);
   const layers = useStore((s) => s.layers);
   const toggleLayer = useStore((s) => s.toggleLayer);
+  const showOnlyLayer = useStore((s) => s.showOnlyLayer);
+  const showAllLayers = useStore((s) => s.showAllLayers);
   const skinOpacity = useStore((s) => s.skinOpacity);
   const setSkinOpacity = useStore((s) => s.setSkinOpacity);
   const resetCamera = useStore((s) => s.resetCamera);
   const resetView = useStore((s) => s.resetView);
+  const panelPosition = useStore((s) => s.panelPosition);
+  const setPanelPosition = useStore((s) => s.setPanelPosition);
+
+  const allOn = LAYERS.every(({ category }) => layers[category]);
 
   return (
     <div className="layer-controls">
       <div className="control-row">
-        <button
-          type="button"
-          className="btn"
-          aria-expanded={open}
-          onClick={() => setOpen((o) => !o)}
-        >
-          Layers
-        </button>
-        <button type="button" className="btn" onClick={resetCamera}>
+        <button type="button" className="btn btn-sm" onClick={resetCamera}>
           Reset view
         </button>
-        <button type="button" className="btn btn-ghost" onClick={resetView}>
+        <button type="button" className="btn btn-sm btn-ghost" onClick={resetView}>
           Reset all
         </button>
       </div>
 
-      {open && (
-        <fieldset className="layer-panel">
-          <legend className="visually-hidden">Toggle anatomical layers</legend>
-          {LAYER_LABELS.map(({ category, label }) => (
-            <label key={category} className="layer-toggle">
-              <input
-                type="checkbox"
-                checked={layers[category]}
-                onChange={() => toggleLayer(category)}
-              />
-              <span>{label}</span>
-            </label>
-          ))}
-          <label className="skin-slider">
-            <span>Skin transparency</span>
+      {/* Quick layer switch: show everything, or isolate a single layer. */}
+      <div className="layer-group" role="group" aria-label="Quick layer switch">
+        <span className="layer-group-label">Show</span>
+        <div className="chip-row">
+          <button
+            type="button"
+            className={`chip ${allOn ? 'chip-active' : ''}`}
+            onClick={showAllLayers}
+          >
+            All
+          </button>
+          {LAYERS.map(({ category, label }) => {
+            const onlyThis =
+              !allOn &&
+              layers[category] &&
+              LAYERS.every((l) => l.category === category || !layers[l.category]);
+            return (
+              <button
+                key={category}
+                type="button"
+                className={`chip ${onlyThis ? 'chip-active' : ''}`}
+                onClick={() => showOnlyLayer(category)}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Fine control: toggle individual layers on/off. */}
+      <fieldset className="layer-panel">
+        <legend className="visually-hidden">Toggle individual layers</legend>
+        {LAYERS.map(({ category, label }) => (
+          <label key={category} className="layer-toggle">
             <input
-              type="range"
-              min={0}
-              max={0.8}
-              step={0.05}
-              value={skinOpacity}
-              disabled={!layers.skin}
-              onChange={(e) => setSkinOpacity(Number(e.target.value))}
+              type="checkbox"
+              checked={layers[category]}
+              onChange={() => toggleLayer(category)}
             />
+            <span>{label}</span>
           </label>
-        </fieldset>
-      )}
+        ))}
+        <label className="skin-slider">
+          <span>Skin transparency</span>
+          <input
+            type="range"
+            min={0}
+            max={0.8}
+            step={0.05}
+            value={skinOpacity}
+            disabled={!layers.skin}
+            onChange={(e) => setSkinOpacity(Number(e.target.value))}
+          />
+        </label>
+      </fieldset>
+
+      {/* Where the info panel appears when a structure is selected. */}
+      <div className="layer-group" role="group" aria-label="Info panel position">
+        <span className="layer-group-label">Info panel</span>
+        <div className="chip-row">
+          {POSITIONS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              className={`chip ${panelPosition === value ? 'chip-active' : ''}`}
+              aria-pressed={panelPosition === value}
+              onClick={() => setPanelPosition(value)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
