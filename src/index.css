@@ -51,30 +51,41 @@ a { color: var(--accent); }
 .btn-active { background: var(--accent); color: #07121f; border-color: var(--accent); font-weight: 600; }
 
 /* Layout: mobile-first (stacked, viewer fills screen) */
-.app {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  height: 100dvh;
-  position: relative;
-}
+/* Full-screen viewer is the main surface; all panels float on top. */
+.app { position: relative; height: 100dvh; overflow: hidden; }
 
-.app-top {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.6rem 0.7rem calc(0.6rem + env(safe-area-inset-top));
-  background: linear-gradient(180deg, rgba(11,18,32,0.95), rgba(11,18,32,0.6));
+.app-viewer { position: absolute; inset: 0; z-index: 1; }
+.app-viewer canvas { touch-action: none; display: block; }
+
+/* Collapsible control dock (top-left overlay). */
+.controls-dock {
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: calc(0.7rem + env(safe-area-inset-top));
+  left: 0.7rem;
   z-index: 10;
+  width: min(340px, calc(100vw - 1.4rem));
+  background: rgba(17, 26, 46, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
-.app-title { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-.app-title h1 { font-size: 1rem; letter-spacing: 0.2px; }
+.dock-bar { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem; }
+.dock-toggle { min-height: 40px; font-weight: 600; }
+.dock-title {
+  font-size: 0.9rem; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.controls-dock:not(.open) .dock-title { color: var(--muted); }
+.dock-body {
+  display: flex; flex-direction: column; gap: 0.6rem;
+  padding: 0 0.6rem 0.7rem;
+  max-height: calc(100dvh - 6rem);
+  overflow-y: auto;
+}
 
-.app-viewer { grid-row: 2; position: absolute; inset: 0; z-index: 1; }
-.app-viewer canvas { touch-action: none; }
-
-/* Info panel as a bottom sheet on mobile */
+/* Info panel: bottom sheet on mobile, right rail on desktop. Mounts only
+   when a structure is selected, so it fully collapses when unused. */
 .app-info {
   position: absolute;
   left: 0; right: 0; bottom: 0;
@@ -84,14 +95,13 @@ a { color: var(--accent); }
   border-top: 1px solid var(--line);
   border-radius: 16px 16px 0 0;
   padding: 0.9rem 0.9rem calc(1rem + env(safe-area-inset-bottom));
-  z-index: 8;
-  box-shadow: 0 -8px 30px rgba(0,0,0,0.4);
-  transform: translateY(72%);
-  transition: transform 0.25s ease;
+  z-index: 9;
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
+  animation: sheet-up 0.25s ease;
 }
-.app-info.has-selection { transform: translateY(0); }
+@keyframes sheet-up { from { transform: translateY(30%); opacity: 0.4; } to { transform: translateY(0); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-  .app-info { transition: none; }
+  .app-info { animation: none; }
 }
 
 /* Search */
@@ -182,24 +192,20 @@ a { color: var(--accent); }
 }
 .app-loading { padding: 2rem; }
 
-/* Desktop: three columns — controls left, viewer centre, info right */
+/* Desktop: info panel becomes a right-side rail that slides in when a
+   structure is selected; the viewer keeps the full screen underneath. */
 @media (min-width: 900px) {
-  .app { grid-template-columns: 320px 1fr 380px; grid-template-rows: 1fr; }
-  .app-top {
-    position: static; grid-column: 1; z-index: 10;
-    justify-content: flex-start; overflow-y: auto;
-    background: var(--panel); border-right: 1px solid var(--line);
-  }
-  .app-title { flex-direction: column; align-items: flex-start; }
-  .app-title h1 { font-size: 1.2rem; }
-  .app-viewer { position: relative; grid-column: 2; }
   .app-info {
-    position: relative; grid-column: 3;
-    max-height: none; height: 100%;
+    left: auto; right: 0; top: 0; bottom: 0;
+    width: 380px; max-height: none;
     border-radius: 0; border-top: 0; border-left: 1px solid var(--line);
-    transform: none; box-shadow: none;
+    box-shadow: -8px 0 30px rgba(0, 0, 0, 0.4);
+    animation: rail-in 0.25s ease;
   }
-  .app-info.has-selection { transform: none; }
+  @keyframes rail-in { from { transform: translateX(20%); opacity: 0.4; } to { transform: translateX(0); opacity: 1; } }
+}
+@media (min-width: 900px) and (prefers-reduced-motion: reduce) {
+  .app-info { animation: none; }
 }
 
 /* Admin editor */

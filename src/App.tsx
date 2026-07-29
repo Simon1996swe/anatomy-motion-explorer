@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Viewer } from './components/Viewer';
 import { WebGLFallback } from './components/WebGLFallback';
 import { SearchBar } from './components/SearchBar';
@@ -17,7 +17,13 @@ const ContentEditor = lazy(() =>
 export default function App() {
   useReducedMotionSync();
   const [webgl] = useState(isWebGLAvailable);
+  const [controlsOpen, setControlsOpen] = useState(false);
   const selectedId = useStore((s) => s.selectedId);
+
+  // Collapse the menu once a structure is picked, so the model stays central.
+  useEffect(() => {
+    if (selectedId) setControlsOpen(false);
+  }, [selectedId]);
 
   // Simple dev-only admin route (no router dependency needed for the MVP).
   if (import.meta.env.DEV && window.location.pathname.startsWith('/admin')) {
@@ -32,22 +38,42 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="app-top">
-        <div className="app-title">
-          <h1>Anatomy Motion Explorer</h1>
-          <LanguageToggle />
-        </div>
-        <SearchBar />
-        <LayerControls />
-      </header>
-
+      {/* Full-screen 3D viewer is the main surface; panels float over it. */}
       <main className="app-viewer">
         <Viewer />
       </main>
 
-      <aside className={`app-info ${selectedId ? 'has-selection' : ''}`}>
-        <InfoPanel />
-      </aside>
+      {/* Collapsible control cluster (top-left). Collapses to a single button. */}
+      <div className={`controls-dock ${controlsOpen ? 'open' : ''}`}>
+        <div className="dock-bar">
+          <button
+            type="button"
+            className="btn dock-toggle"
+            aria-expanded={controlsOpen}
+            aria-controls="controls-body"
+            onClick={() => setControlsOpen((o) => !o)}
+          >
+            {controlsOpen ? '✕ Close' : '☰ Menu'}
+          </button>
+          <span className="dock-title">Anatomy Motion Explorer</span>
+        </div>
+
+        {controlsOpen && (
+          <div id="controls-body" className="dock-body">
+            <LanguageToggle />
+            <SearchBar />
+            <LayerControls />
+          </div>
+        )}
+      </div>
+
+      {/* Info panel only mounts when something is selected, so it stays out of
+          the way otherwise and the model gets the full screen. */}
+      {selectedId && (
+        <aside className="app-info has-selection">
+          <InfoPanel />
+        </aside>
+      )}
     </div>
   );
 }

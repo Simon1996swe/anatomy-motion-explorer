@@ -73,7 +73,8 @@ export function ArmModel() {
   });
 
   return (
-    <group position={[0, 0, 0]}>
+    // Shift up so the arm's geometric centre sits at the origin for framing.
+    <group position={[0, 0.15, 0]}>
       {/* Humerus: fixed vertical upper-arm bone (shoulder at top, elbow at 0). */}
       {visible('bone', 'humerus') && (
         <group position={[0, 1, 0]}>
