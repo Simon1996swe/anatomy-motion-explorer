@@ -43,15 +43,27 @@ OUT = os.path.join(os.path.dirname(__file__), "..", "public", "models", f"{out_n
 os.makedirs(STL_DIR, exist_ok=True)
 
 # --- 1. Determine part ids ---------------------------------------------------
-ids: set[str] = set()
-if mode.startswith("root:"):
-    root = mode.split(":", 1)[1]
+def load_composites() -> dict[str, set[str]]:
+    comp: dict[str, set[str]] = {}
     with open(COMPOSITE, encoding="utf-8", errors="ignore") as fh:
         next(fh, None)
         for line in fh:
             cols = line.rstrip("\n").split("\t")
-            if len(cols) >= 3 and cols[0] == root:
-                ids.add(cols[2])
+            if len(cols) >= 3:
+                comp.setdefault(cols[0], set()).add(cols[2])
+    return comp
+
+
+ids: set[str] = set()
+if mode.startswith("root:"):
+    comp = load_composites()
+    ids = set(comp.get(mode.split(":", 1)[1], set()))
+elif mode.startswith("expand:"):
+    # Each id is expanded to its leaf primitives if it is a composite,
+    # otherwise treated as a direct leaf mesh.
+    comp = load_composites()
+    for w in mode.split(":", 1)[1].split(","):
+        ids |= comp.get(w, {w})
 elif mode.startswith("ids:"):
     ids = set(mode.split(":", 1)[1].split(","))
 ids -= exclude

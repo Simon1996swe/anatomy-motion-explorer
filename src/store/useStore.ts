@@ -5,7 +5,16 @@ export type Language = 'en' | 'la';
 
 export type PanelPosition = 'bottom' | 'right' | 'left' | 'top';
 
-export type CameraFocus = 'body' | 'arm';
+export type CameraFocus =
+  | 'front'
+  | 'back'
+  | 'left'
+  | 'right'
+  | 'top'
+  | 'bottom'
+  | 'arms'
+  | 'legs'
+  | 'arm';
 
 export type LayerVisibility = Record<StructureCategory, boolean>;
 
@@ -68,7 +77,7 @@ export const useStore = create<AppState>((set) => ({
   reducedMotion: false,
   cameraResetToken: 0,
   panelPosition: 'bottom',
-  focus: 'body',
+  focus: 'front',
 
   select: (id) => set({ selectedId: id, isolate: false }),
   setPanelPosition: (position) => set({ panelPosition: position }),

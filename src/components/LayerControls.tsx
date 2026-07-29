@@ -1,6 +1,18 @@
 import { useStore } from '../store/useStore';
 import type { StructureCategory } from '../types/anatomy';
-import type { PanelPosition } from '../store/useStore';
+import type { PanelPosition, CameraFocus } from '../store/useStore';
+
+const VIEWS: { value: CameraFocus; label: string }[] = [
+  { value: 'front', label: 'Front' },
+  { value: 'back', label: 'Back' },
+  { value: 'left', label: 'Left' },
+  { value: 'right', label: 'Right' },
+  { value: 'top', label: 'Top' },
+  { value: 'bottom', label: 'Bottom' },
+  { value: 'arms', label: 'Arms' },
+  { value: 'legs', label: 'Legs' },
+  { value: 'arm', label: 'Right arm' },
+];
 
 const LAYERS: { category: StructureCategory; label: string }[] = [
   { category: 'skin', label: 'Skin' },
@@ -35,26 +47,21 @@ export function LayerControls() {
 
   return (
     <div className="layer-controls">
-      {/* Camera focus: whole body vs. zoomed to the arm. */}
+      {/* Camera views: click to move the camera to that angle / region. */}
       <div className="layer-group" role="group" aria-label="Camera view">
-        <span className="layer-group-label">View</span>
+        <span className="layer-group-label">Camera</span>
         <div className="chip-row">
-          <button
-            type="button"
-            className={`chip ${focus === 'body' ? 'chip-active' : ''}`}
-            aria-pressed={focus === 'body'}
-            onClick={() => setFocus('body')}
-          >
-            Whole body
-          </button>
-          <button
-            type="button"
-            className={`chip ${focus === 'arm' ? 'chip-active' : ''}`}
-            aria-pressed={focus === 'arm'}
-            onClick={() => setFocus('arm')}
-          >
-            Arm
-          </button>
+          {VIEWS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              className={`chip ${focus === value ? 'chip-active' : ''}`}
+              aria-pressed={focus === value}
+              onClick={() => setFocus(value)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 

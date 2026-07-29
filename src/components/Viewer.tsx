@@ -10,15 +10,19 @@ import { ModelErrorBoundary } from './ModelErrorBoundary';
 import { useStore } from '../store/useStore';
 
 // Camera presets in the shared body coordinate frame (elbow at the origin).
-const VIEWS = {
-  body: {
-    position: [3, 0.5, 19] as [number, number, number],
-    target: [1, -1.5, 1.6] as [number, number, number],
-  },
-  arm: {
-    position: [2.5, 0.9, 7.6] as [number, number, number],
-    target: [-0.1, 0.2, 0.1] as [number, number, number],
-  },
+// Body centre ~ (0.98, -1.5, 1.6); height ~12, anterior = +Z, up = +Y.
+type View = { position: [number, number, number]; target: [number, number, number] };
+const C: [number, number, number] = [0.98, -1.5, 1.6];
+const VIEWS: Record<string, View> = {
+  front: { position: [C[0], C[1], C[2] + 20], target: C },
+  back: { position: [C[0], C[1], C[2] - 20], target: C },
+  left: { position: [C[0] - 20, C[1], C[2]], target: C },
+  right: { position: [C[0] + 20, C[1], C[2]], target: C },
+  top: { position: [C[0], C[1] + 15, C[2] + 0.01], target: C },
+  bottom: { position: [C[0], C[1] - 15, C[2] + 0.01], target: C },
+  arms: { position: [C[0], 0, C[2] + 12], target: [C[0], 0, C[2]] },
+  legs: { position: [C[0], -4.5, C[2] + 12], target: [C[0], -4.5, C[2]] },
+  arm: { position: [2.5, 0.9, 7.6], target: [-0.1, 0.2, 0.1] },
 };
 
 function CameraRig() {
@@ -45,7 +49,7 @@ function CameraRig() {
       enableDamping={false}
       minDistance={2}
       maxDistance={45}
-      target={VIEWS.body.target}
+      target={VIEWS.front.target}
     />
   );
 }
@@ -77,7 +81,7 @@ export function Viewer() {
       // On-demand rendering: only repaint on interaction/animation, not every
       // frame. Keeps idle GPU/CPU near zero (fixes laptop lag & heat).
       frameloop="demand"
-      camera={{ position: VIEWS.body.position, fov: 42, near: 0.1, far: 200 }}
+      camera={{ position: VIEWS.front.position, fov: 42, near: 0.1, far: 200 }}
       dpr={[1, 1.75]}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
     >
