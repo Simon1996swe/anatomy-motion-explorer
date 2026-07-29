@@ -24,6 +24,12 @@ Files:
                  humerus/radius/ulna, which arm.glb provides). Built by
                  scripts/build_skeleton.py using the same transform as the arm,
                  decimated (meshoptimizer) and meshopt-compressed.
+  muscles.glb  — whole-body musculature context (muscular system FMA72954,
+                 excluding the right biceps/triceps heads that arm.glb provides).
+                 Built by scripts/build_system.py, per-part + global decimation,
+                 meshopt-compressed.
+  (fascia)     — BodyParts3D contains no fascia surface meshes, so no fascia
+                 model is included; the Fascia layer is a placeholder.
 
 Source parts used (right arm), by FMA id:
   bone_humerus   : FMA23130

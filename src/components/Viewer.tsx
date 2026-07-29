@@ -5,6 +5,7 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { ArmModel } from './ArmModel';
 import { ArmModelGLB } from './ArmModelGLB';
 import { SkeletonModel } from './SkeletonModel';
+import { MuscleSystemModel } from './MuscleSystemModel';
 import { ModelErrorBoundary } from './ModelErrorBoundary';
 import { useStore } from '../store/useStore';
 
@@ -87,10 +88,15 @@ export function Viewer() {
       <directionalLight position={[0, -3, 4]} intensity={0.35} />
       <hemisphereLight args={['#cfe0ff', '#20293d', 0.7]} />
       <BackgroundDeselect />
-      {/* Whole-body skeleton context; failure here shouldn't break the arm. */}
+      {/* Whole-body context meshes; failure here shouldn't break the arm. */}
       <ModelErrorBoundary fallback={null}>
         <Suspense fallback={null}>
           <SkeletonModel />
+        </Suspense>
+      </ModelErrorBoundary>
+      <ModelErrorBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <MuscleSystemModel />
         </Suspense>
       </ModelErrorBoundary>
       <ModelErrorBoundary fallback={<ArmModel />}>
