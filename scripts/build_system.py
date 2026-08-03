@@ -93,13 +93,16 @@ with open(os.path.join(os.path.dirname(__file__), "arm_transform.json")) as fh:
     T = json.load(fh)
 R = np.array(T["R"]); pivot = np.array(T["pivot"]); flip = T["flip"]; scale = T["scale"]
 
+_corr = os.path.join(os.path.dirname(__file__), "correction.json")
+Rc = np.array(json.load(open(_corr))["Rc"]) if os.path.exists(_corr) else np.eye(3)
+
 
 def apply_transform(v: np.ndarray) -> np.ndarray:
     v = (R @ (v - pivot).T).T
     if flip:
         v[:, 0] *= -1
         v[:, 2] *= -1
-    return v * scale
+    return (Rc @ (v * scale).T).T
 
 
 meshes = []

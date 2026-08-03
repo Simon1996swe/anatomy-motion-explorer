@@ -128,6 +128,11 @@ with open(transform_path, "w") as fh:
     )
 print(f"Wrote {transform_path}")
 
+# NOTE: the upright correction (scripts/correction.json) is NOT baked into the
+# arm. It is applied as a wrapper rotation in the app (ArmModelGLB) so the elbow
+# hinge stays in its exact anatomical plane. The static skeleton/muscle system
+# meshes DO bake it (they have no articulation).
+
 scene = trimesh.Scene(geometry={name: m for name, m in parts.items()})
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)

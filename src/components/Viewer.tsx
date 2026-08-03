@@ -12,7 +12,7 @@ import { useStore } from '../store/useStore';
 // Camera presets in the shared body coordinate frame (elbow at the origin).
 // Body centre ~ (0.98, -1.5, 1.6); height ~12, anterior = +Z, up = +Y.
 type View = { position: [number, number, number]; target: [number, number, number] };
-const C: [number, number, number] = [0.98, -1.5, 1.6];
+const C: [number, number, number] = [0.74, -1.74, 1.49];
 const VIEWS: Record<string, View> = {
   front: { position: [C[0], C[1], C[2] + 20], target: C },
   back: { position: [C[0], C[1], C[2] - 20], target: C },
@@ -20,9 +20,9 @@ const VIEWS: Record<string, View> = {
   right: { position: [C[0] + 20, C[1], C[2]], target: C },
   top: { position: [C[0], C[1] + 15, C[2] + 0.01], target: C },
   bottom: { position: [C[0], C[1] - 15, C[2] + 0.01], target: C },
-  arms: { position: [C[0], 0, C[2] + 12], target: [C[0], 0, C[2]] },
-  legs: { position: [C[0], -4.5, C[2] + 12], target: [C[0], -4.5, C[2]] },
-  arm: { position: [2.5, 0.9, 7.6], target: [-0.1, 0.2, 0.1] },
+  arms: { position: [C[0], 0.2, C[2] + 12], target: [C[0], 0.2, C[2]] },
+  legs: { position: [C[0], -4.7, C[2] + 12], target: [C[0], -4.7, C[2]] },
+  arm: { position: [2.4, 0.9, 7.7], target: [-0.1, 0.2, 0.2] },
 };
 
 function CameraRig() {

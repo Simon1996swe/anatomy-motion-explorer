@@ -19,6 +19,18 @@ const MODEL_URL = `${import.meta.env.BASE_URL}models/arm.glb`;
 const MAX_FLEX = 2.53;
 const HALF_SWING = 1.5;
 
+// Upright correction (scripts/correction.json) applied as a wrapper rotation so
+// the elbow hinge stays in its anatomical plane while the arm aligns with the
+// tilt-corrected skeleton/muscles.
+const CORRECTION = new THREE.Quaternion().setFromRotationMatrix(
+  new THREE.Matrix4().set(
+    0.9936588144111625, 0.11216169357875604, -0.007868610839787625, 0,
+    -0.11216169357875604, 0.9838948616486044, -0.1391785030635796, 0,
+    -0.007868610839787625, 0.1391785030635796, 0.9902360472374419, 0,
+    0, 0, 0, 1,
+  ),
+);
+
 const NODE = {
   humerus: 'bone_humerus',
   radius: 'bone_radius',
@@ -124,10 +136,10 @@ export function ArmModelGLB() {
   ];
 
   return (
-    // Shared body coordinate frame: the elbow is at the local origin, so the
-    // forearm subgroup hinges about the joint and everything aligns with the
-    // whole-body skeleton.
-    <group>
+    // Wrapper applies the upright correction; inside, the elbow is at the local
+    // origin so the forearm subgroup hinges in its exact anatomical plane and
+    // everything aligns with the tilt-corrected whole-body skeleton.
+    <group quaternion={CORRECTION}>
       {visible('bone', 'humerus') && (
         <SelectablePart structureId="humerus" category="bone" color="#e7e2d3">
           <primitive object={geos[NODE.humerus]} attach="geometry" />
