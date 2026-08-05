@@ -1,4 +1,5 @@
 import type { AnatomicalStructure, AnimationClip } from '../types/anatomy';
+import { bodyStructures } from './bodyStructures';
 
 /**
  * MVP content: the elbow prototype.
@@ -18,7 +19,7 @@ const wikiElbow = {
   accessedAt: '2026-07-29',
 };
 
-export const structures: AnatomicalStructure[] = [
+const armStructures: AnatomicalStructure[] = [
   {
     id: 'biceps-brachii',
     englishName: 'Biceps brachii',
@@ -40,9 +41,10 @@ export const structures: AnatomicalStructure[] = [
       'Bending the elbow to lift a mug of coffee toward your chest',
       'Turning a doorknob or a screwdriver (supination)',
     ],
-    relatedStructureIds: ['triceps-brachii', 'humerus', 'radius'],
+    relatedStructureIds: ['triceps-brachii', 'humerus', 'radius', 'brachioradialis'],
     antagonistIds: ['triceps-brachii'],
-    modelNodeNames: ['muscle_biceps'],
+    // Right arm mesh (arm.glb) and left arm mesh (muscles.glb).
+    modelNodeNames: ['muscle_biceps', 'biceps_brachii'],
     animationIds: ['elbow-flexion'],
     sources: [
       {
@@ -76,9 +78,10 @@ export const structures: AnatomicalStructure[] = [
       'Straightening the arm to push a door open',
       'Pushing yourself up from a chair',
     ],
-    relatedStructureIds: ['biceps-brachii', 'humerus', 'ulna'],
-    antagonistIds: ['biceps-brachii'],
-    modelNodeNames: ['muscle_triceps'],
+    relatedStructureIds: ['biceps-brachii', 'humerus', 'ulna', 'deltoid'],
+    antagonistIds: ['biceps-brachii', 'brachioradialis'],
+    // Right arm mesh (arm.glb) and left arm mesh (muscles.glb).
+    modelNodeNames: ['muscle_triceps', 'triceps_brachii'],
     animationIds: ['elbow-extension'],
     sources: [
       {
@@ -148,6 +151,14 @@ export const structures: AnatomicalStructure[] = [
     reviewed: false,
   },
 ];
+
+/** All structures: the detailed arm plus the whole-body groups. */
+export const structures: AnatomicalStructure[] = [...armStructures, ...bodyStructures];
+
+/** Maps a 3D mesh/node name to the structure id it represents. */
+export const nodeNameToStructureId: Record<string, string> = Object.fromEntries(
+  structures.flatMap((s) => s.modelNodeNames.map((n) => [n, s.id])),
+);
 
 export const animations: AnimationClip[] = [
   {
