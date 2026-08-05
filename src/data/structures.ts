@@ -79,7 +79,7 @@ const armStructures: AnatomicalStructure[] = [
       'Pushing yourself up from a chair',
     ],
     relatedStructureIds: ['biceps-brachii', 'humerus', 'ulna', 'deltoid'],
-    antagonistIds: ['biceps-brachii', 'brachioradialis', 'brachialis'],
+    antagonistIds: ['biceps-brachii', 'brachioradialis'],
     // Right arm mesh (arm.glb) and left arm mesh (muscles.glb).
     modelNodeNames: ['muscle_triceps', 'triceps_brachii'],
     animationIds: ['elbow-extension'],

@@ -66,36 +66,6 @@ GROUPS: dict[str, list[str]] = {
     "gastrocnemius": ["FMA22541"],
     "soleus": ["FMA22558", "FMA22559"],
     "tibialis_anterior": ["FMA22544", "FMA22545"],
-
-    # --- deeper / filling layers ------------------------------------------
-    "erector_spinae": ["FMA77177", "FMA77178", "FMA77179"],  # iliocostalis, longissimus, spinalis
-    "semispinalis": ["FMA22823"],
-    "multifidus": ["FMA22827"],
-    "quadratus_lumborum": ["FMA15569"],
-    "rhomboids": ["FMA13379", "FMA13380"],
-    "levator_scapulae": ["FMA32519"],
-    "serratus_anterior": ["FMA13397"],
-    "pectoralis_minor": ["FMA13109"],
-    "supraspinatus": ["FMA9629"],
-    "subscapularis": ["FMA13413"],
-    "teres_minor": ["FMA32550"],
-    "coracobrachialis": ["FMA37664"],
-    "brachialis": ["FMA37667"],
-    "anconeus": ["FMA37704"],
-    "forearm_flexors": ["FMA38459", "FMA38465", "FMA38469"],
-    "forearm_extensors": ["FMA38494", "FMA38497", "FMA38500", "FMA38506"],
-    "internal_oblique": ["FMA13891"],
-    "transversus_abdominis": ["FMA15570"],
-    "iliopsoas": ["FMA22310", "FMA18060"],
-    "tensor_fasciae_latae": ["FMA22423"],
-    "gluteus_minimus": ["FMA22317"],
-    "adductors": ["FMA22443", "FMA22441", "FMA22442", "FMA43882", "FMA22440"],
-    "popliteus": ["FMA22590"],
-    "tibialis_posterior": ["FMA51099"],
-    "fibularis": ["FMA22539", "FMA22540"],
-    "splenius": ["FMA22653"],
-    "temporalis": ["FMA49006"],
-    "masseter": ["FMA48996"],
 }
 
 # Fascial / connective-tissue structures that exist as meshes in BodyParts3D.
