@@ -34,7 +34,7 @@ export function MuscleFillModel() {
         mesh.geometry.computeVertexNormals();
       }
       mesh.material = material;
-      mesh.add(makeOutlineMesh(mesh, 0.012));
+      mesh.add(makeOutlineMesh(mesh, 0.016));
       mesh.raycast = () => {}; // filler context: named groups stay clickable
     });
     return clone;

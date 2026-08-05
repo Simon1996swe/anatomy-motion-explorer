@@ -87,12 +87,14 @@ export function Viewer() {
       dpr={[1, 1.75]}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
     >
-      {/* Illustrated look: flat lighting so cel shading reads as clean bands
-          rather than smooth gradients, on a soft neutral backdrop. */}
+      {/* Illustrated look. Cel shading needs directional contrast: too much
+          ambient light pushes every surface into the brightest band and the
+          banding disappears, so ambient stays low. */}
       <color attach="background" args={['#111a2b']} />
-      <ambientLight intensity={1.5} />
-      <directionalLight position={[4, 7, 6]} intensity={1.5} />
-      <directionalLight position={[-5, 2, -4]} intensity={0.5} />
+      <ambientLight intensity={0.45} />
+      <directionalLight position={[4, 6, 8]} intensity={2.1} />
+      <directionalLight position={[-6, 3, -4]} intensity={0.7} />
+      <directionalLight position={[0, -4, 3]} intensity={0.35} />
       <BackgroundDeselect />
       {/* Whole-body context meshes; failure here shouldn't break the arm. */}
       <ModelErrorBoundary fallback={null}>

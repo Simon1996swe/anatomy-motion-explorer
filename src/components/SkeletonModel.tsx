@@ -34,7 +34,7 @@ export function SkeletonModel() {
           mesh.geometry.computeVertexNormals();
         }
         mesh.material = material;
-        mesh.add(makeOutlineMesh(mesh, 0.014));
+        mesh.add(makeOutlineMesh(mesh, 0.016));
         mesh.raycast = () => {}; // non-selectable context
       }
     });

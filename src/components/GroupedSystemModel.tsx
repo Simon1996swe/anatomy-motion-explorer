@@ -93,7 +93,7 @@ export function GroupedSystemModel({
         opacity,
         doubleSided: opacity < 1,
       });
-      if (opacity >= 1) mesh.add(makeOutlineMesh(mesh, 0.012));
+      if (opacity >= 1) mesh.add(makeOutlineMesh(mesh, 0.016));
 
       if (structureId) {
         const list = index.get(structureId) ?? [];
