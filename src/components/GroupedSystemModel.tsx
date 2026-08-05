@@ -29,6 +29,12 @@ function baseName(name: string): string {
   return name.replace(/[.#]\d+$/, '');
 }
 
+/** Vertical axis of the body in the shared frame (x, z); used for exploding. */
+const BODY_AXIS_X = 1.51;
+const BODY_AXIS_Z = 0.4;
+/** How far structures travel at explode = 1. */
+const EXPLODE_DISTANCE = 3.2;
+
 export function GroupedSystemModel({
   url,
   colors,
@@ -45,12 +51,19 @@ export function GroupedSystemModel({
   const hoveredId = useStore((s) => s.hoveredId);
   const isolate = useStore((s) => s.isolate);
 
+  const explode = useStore((s) => s.explode);
+
   // Meshes owned by this model, indexed by the structure they represent.
   const byStructure = useRef(new Map<string, THREE.Mesh[]>());
+  // Outward direction for each mesh, used by the explode slider.
+  const explodeDirs = useRef(new Map<THREE.Mesh, THREE.Vector3>());
 
   const object = useMemo(() => {
     const clone = scene.clone(true);
+    // Needed so localToWorld below reflects the glTF node transforms.
+    clone.updateMatrixWorld(true);
     const index = new Map<string, THREE.Mesh[]>();
+    const dirs = new Map<THREE.Mesh, THREE.Vector3>();
 
     clone.traverse((o) => {
       const mesh = o as THREE.Mesh;
@@ -58,6 +71,17 @@ export function GroupedSystemModel({
 
       const key = baseName(mesh.name);
       const structureId = nodeNameToStructureId[key];
+
+      // Direction this mesh moves when the model is exploded: straight out
+      // from the body's vertical axis, so structures separate sideways
+      // instead of piling up.
+      mesh.geometry.computeBoundingBox();
+      const c = new THREE.Vector3();
+      mesh.geometry.boundingBox!.getCenter(c);
+      mesh.localToWorld(c);
+      const dir = new THREE.Vector3(c.x - BODY_AXIS_X, 0, c.z - BODY_AXIS_Z);
+      if (dir.lengthSq() < 1e-6) dir.set(0, 0, 1);
+      dirs.set(mesh, dir.normalize());
 
       // Each mesh gets its own material so it can be highlighted individually.
       mesh.material = new THREE.MeshStandardMaterial({
@@ -84,8 +108,17 @@ export function GroupedSystemModel({
     });
 
     byStructure.current = index;
+    explodeDirs.current = dirs;
     return clone;
   }, [scene, colors, fallbackColor, opacity, roughness]);
+
+  // Pull structures away from the body axis.
+  useEffect(() => {
+    for (const [mesh, dir] of explodeDirs.current) {
+      mesh.position.copy(dir).multiplyScalar(explode * EXPLODE_DISTANCE);
+    }
+    invalidate();
+  }, [explode, object, invalidate]);
 
   // Highlight selection / hover, and honour isolate mode.
   useEffect(() => {

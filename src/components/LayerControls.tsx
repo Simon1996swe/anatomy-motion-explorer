@@ -46,6 +46,8 @@ export function LayerControls() {
   const setFocus = useStore((s) => s.setFocus);
   const showAllMuscles = useStore((s) => s.showAllMuscles);
   const toggleAllMuscles = useStore((s) => s.toggleAllMuscles);
+  const explode = useStore((s) => s.explode);
+  const setExplode = useStore((s) => s.setExplode);
   const [legendOpen, setLegendOpen] = useState(false);
 
   const allOn = LAYERS.every(({ category }) => layers[category]);
@@ -130,6 +132,17 @@ export function LayerControls() {
             onChange={toggleAllMuscles}
           />
           <span>Deep muscles (full body)</span>
+        </label>
+        <label className="skin-slider">
+          <span>Separate structures (stretch apart)</span>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.02}
+            value={explode}
+            onChange={(e) => setExplode(Number(e.target.value))}
+          />
         </label>
         <label className="skin-slider">
           <span>Skin transparency</span>

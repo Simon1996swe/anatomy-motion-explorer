@@ -39,6 +39,9 @@ export type AppState = {
   /** Show the full musculature (deep filler) as well as the named groups. */
   showAllMuscles: boolean;
   toggleAllMuscles: () => void;
+  /** 0 = anatomical position, 1 = structures pulled fully apart. */
+  explode: number;
+  setExplode: (value: number) => void;
 
   select: (id: string | null) => void;
   setPanelPosition: (position: PanelPosition) => void;
@@ -82,11 +85,13 @@ export const useStore = create<AppState>((set) => ({
   panelPosition: 'bottom',
   focus: 'front',
   showAllMuscles: true,
+  explode: 0,
 
   select: (id) => set({ selectedId: id, isolate: false }),
   setPanelPosition: (position) => set({ panelPosition: position }),
   setFocus: (focus) => set((s) => ({ focus, cameraResetToken: s.cameraResetToken + 1 })),
   toggleAllMuscles: () => set((s) => ({ showAllMuscles: !s.showAllMuscles })),
+  setExplode: (value) => set({ explode: value }),
   showOnlyLayer: (category) =>
     set(() => ({
       layers: {
@@ -124,6 +129,8 @@ export const useStore = create<AppState>((set) => ({
       elbowAngle: 0,
       skinOpacity: 0.25,
       layers: { ...defaultLayers },
+      explode: 0,
+      showAllMuscles: true,
       cameraResetToken: s.cameraResetToken + 1,
     })),
 }));
