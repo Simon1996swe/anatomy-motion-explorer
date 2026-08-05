@@ -6,6 +6,7 @@ import { ArmModel } from './ArmModel';
 import { ArmModelGLB } from './ArmModelGLB';
 import { SkeletonModel } from './SkeletonModel';
 import { MuscleSystemModel } from './MuscleSystemModel';
+import { FasciaModel } from './FasciaModel';
 import { ModelErrorBoundary } from './ModelErrorBoundary';
 import { useStore } from '../store/useStore';
 
@@ -101,6 +102,11 @@ export function Viewer() {
       <ModelErrorBoundary fallback={null}>
         <Suspense fallback={null}>
           <MuscleSystemModel />
+        </Suspense>
+      </ModelErrorBoundary>
+      <ModelErrorBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <FasciaModel />
         </Suspense>
       </ModelErrorBoundary>
       <ModelErrorBoundary fallback={<ArmModel />}>

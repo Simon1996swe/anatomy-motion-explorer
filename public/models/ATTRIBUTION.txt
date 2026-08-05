@@ -30,8 +30,11 @@ Files:
                  etc.), expanded to leaf meshes and decimated per-part. Excludes
                  the right biceps/triceps that arm.glb provides. Built by
                  scripts/build_system.py, meshopt-compressed.
-  (fascia)     — BodyParts3D contains no fascia surface meshes, so no fascia
-                 model is included; the Fascia layer is a placeholder.
+  fascia.glb   — fascial / connective-tissue structures: iliotibial tract,
+                 interosseous membranes (forearm + leg), flexor retinaculum of
+                 the wrist, linea alba, epicranial aponeurosis. Each is a named
+                 mesh. Note: BodyParts3D has no surface mesh for fascia lata
+                 itself, so broad limb-wrapping fascia sheets are not included.
 
 Source parts used (right arm), by FMA id:
   bone_humerus   : FMA23130

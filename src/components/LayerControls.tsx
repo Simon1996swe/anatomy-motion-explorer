@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import type { StructureCategory } from '../types/anatomy';
 import type { PanelPosition, CameraFocus } from '../store/useStore';
+import { MUSCLE_GROUPS, FASCIA_GROUPS } from '../data/groupColors';
 
 const VIEWS: { value: CameraFocus; label: string }[] = [
   { value: 'front', label: 'Front' },
@@ -42,6 +44,7 @@ export function LayerControls() {
   const setPanelPosition = useStore((s) => s.setPanelPosition);
   const focus = useStore((s) => s.focus);
   const setFocus = useStore((s) => s.setFocus);
+  const [legendOpen, setLegendOpen] = useState(false);
 
   const allOn = LAYERS.every(({ category }) => layers[category]);
 
@@ -130,6 +133,40 @@ export function LayerControls() {
           />
         </label>
       </fieldset>
+
+      {/* Colour legend: colour alone must never identify a structure. */}
+      <div className="layer-group">
+        <button
+          type="button"
+          className="btn btn-sm"
+          aria-expanded={legendOpen}
+          onClick={() => setLegendOpen((o) => !o)}
+        >
+          {legendOpen ? 'Hide colour key' : 'Colour key'}
+        </button>
+        {legendOpen && (
+          <div className="legend">
+            <span className="layer-group-label">Muscle groups</span>
+            <ul className="legend-list">
+              {MUSCLE_GROUPS.map(({ key, label, color }) => (
+                <li key={key}>
+                  <span className="swatch" style={{ background: color }} aria-hidden="true" />
+                  {label}
+                </li>
+              ))}
+            </ul>
+            <span className="layer-group-label">Fascia</span>
+            <ul className="legend-list">
+              {FASCIA_GROUPS.map(({ key, label, color }) => (
+                <li key={key}>
+                  <span className="swatch" style={{ background: color }} aria-hidden="true" />
+                  {label}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
 
       {/* Where the info panel appears when a structure is selected. */}
       <div className="layer-group" role="group" aria-label="Info panel position">
