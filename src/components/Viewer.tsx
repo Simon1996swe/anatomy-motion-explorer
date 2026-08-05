@@ -6,6 +6,7 @@ import { ArmModel } from './ArmModel';
 import { ArmModelGLB } from './ArmModelGLB';
 import { SkeletonModel } from './SkeletonModel';
 import { MuscleSystemModel } from './MuscleSystemModel';
+import { MuscleFillModel } from './MuscleFillModel';
 import { FasciaModel } from './FasciaModel';
 import { ModelErrorBoundary } from './ModelErrorBoundary';
 import { useStore } from '../store/useStore';
@@ -97,6 +98,12 @@ export function Viewer() {
       <ModelErrorBoundary fallback={null}>
         <Suspense fallback={null}>
           <SkeletonModel />
+        </Suspense>
+      </ModelErrorBoundary>
+      {/* Full musculature underneath, then the named colour-coded groups. */}
+      <ModelErrorBoundary fallback={null}>
+        <Suspense fallback={null}>
+          <MuscleFillModel />
         </Suspense>
       </ModelErrorBoundary>
       <ModelErrorBoundary fallback={null}>

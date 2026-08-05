@@ -79,7 +79,19 @@ FASCIA: dict[str, list[str]] = {
     "epicranial_aponeurosis": ["FMA46768"],
 }
 
-GROUPS = {"muscles": GROUPS, "fascia": FASCIA}[SPEC]
+NAMED_GROUPS = GROUPS
+
+# "fill" builds every remaining muscle of the muscular system (FMA72954) as one
+# merged mesh, so the figure looks like a complete body. The named groups above
+# and the animated right biceps/triceps stay separate on top of it.
+MUSCULAR_SYSTEM_ROOT = "FMA72954"
+RIGHT_ARM_IDS = {"FMA37684", "FMA37686", "FMA37695", "FMA37697", "FMA37699"}
+
+if SPEC == "fascia":
+    GROUPS = FASCIA
+elif SPEC == "muscles":
+    GROUPS = NAMED_GROUPS
+# SPEC == "fill" is resolved after the composite table is loaded.
 
 os.makedirs(STL_DIR, exist_ok=True)
 
@@ -97,13 +109,25 @@ def load_composites() -> dict[str, set[str]]:
 
 comp = load_composites()
 
-# Expand each group to leaf ids.
-group_ids: dict[str, set[str]] = {}
-for group, seeds in GROUPS.items():
+
+def expand(seeds: list[str]) -> set[str]:
     ids: set[str] = set()
     for s in seeds:
         ids |= comp.get(s, {s})
-    group_ids[group] = ids
+    return ids
+
+
+if SPEC == "fill":
+    # Everything in the muscular system that isn't already a named group or
+    # part of the animated right arm, merged into a single filler mesh.
+    named: set[str] = set()
+    for seeds in NAMED_GROUPS.values():
+        named |= expand(seeds)
+    everything = comp.get(MUSCULAR_SYSTEM_ROOT, set())
+    GROUPS = {"other_muscles": sorted(everything - named - RIGHT_ARM_IDS)}
+
+# Expand each group to leaf ids.
+group_ids: dict[str, set[str]] = {g: expand(seeds) for g, seeds in GROUPS.items()}
 
 all_ids = sorted({i for ids in group_ids.values() for i in ids})
 print(f"{len(GROUPS)} groups -> {len(all_ids)} leaf parts")

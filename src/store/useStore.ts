@@ -36,6 +36,9 @@ export type AppState = {
   panelPosition: PanelPosition;
   /** Which part of the model the camera frames. */
   focus: CameraFocus;
+  /** Show the full musculature (deep filler) as well as the named groups. */
+  showAllMuscles: boolean;
+  toggleAllMuscles: () => void;
 
   select: (id: string | null) => void;
   setPanelPosition: (position: PanelPosition) => void;
@@ -78,10 +81,12 @@ export const useStore = create<AppState>((set) => ({
   cameraResetToken: 0,
   panelPosition: 'bottom',
   focus: 'front',
+  showAllMuscles: true,
 
   select: (id) => set({ selectedId: id, isolate: false }),
   setPanelPosition: (position) => set({ panelPosition: position }),
   setFocus: (focus) => set((s) => ({ focus, cameraResetToken: s.cameraResetToken + 1 })),
+  toggleAllMuscles: () => set((s) => ({ showAllMuscles: !s.showAllMuscles })),
   showOnlyLayer: (category) =>
     set(() => ({
       layers: {

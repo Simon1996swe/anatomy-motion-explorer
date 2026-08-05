@@ -44,6 +44,8 @@ export function LayerControls() {
   const setPanelPosition = useStore((s) => s.setPanelPosition);
   const focus = useStore((s) => s.focus);
   const setFocus = useStore((s) => s.setFocus);
+  const showAllMuscles = useStore((s) => s.showAllMuscles);
+  const toggleAllMuscles = useStore((s) => s.toggleAllMuscles);
   const [legendOpen, setLegendOpen] = useState(false);
 
   const allOn = LAYERS.every(({ category }) => layers[category]);
@@ -120,6 +122,15 @@ export function LayerControls() {
             <span>{label}</span>
           </label>
         ))}
+        <label className="layer-toggle">
+          <input
+            type="checkbox"
+            checked={showAllMuscles}
+            disabled={!layers.muscle}
+            onChange={toggleAllMuscles}
+          />
+          <span>Deep muscles (full body)</span>
+        </label>
         <label className="skin-slider">
           <span>Skin transparency</span>
           <input
