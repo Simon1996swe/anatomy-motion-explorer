@@ -12,7 +12,7 @@ import { useStore } from '../store/useStore';
 // Camera presets in the shared body coordinate frame (elbow at the origin).
 // Body centre ~ (0.98, -1.5, 1.6); height ~12, anterior = +Z, up = +Y.
 type View = { position: [number, number, number]; target: [number, number, number] };
-const C: [number, number, number] = [0.74, -1.74, 1.49];
+const C: [number, number, number] = [1.51, -1.74, 0.4];
 const VIEWS: Record<string, View> = {
   front: { position: [C[0], C[1], C[2] + 20], target: C },
   back: { position: [C[0], C[1], C[2] - 20], target: C },

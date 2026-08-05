@@ -108,9 +108,13 @@ def apply_transform(v: np.ndarray) -> np.ndarray:
 meshes = []
 for p in paths:
     try:
-        m = trimesh.load(p, process=False)
+        # STL stores every triangle with its own vertices; merge duplicates so
+        # the mesh is properly indexed, otherwise edge-collapse decimation has
+        # no shared edges to work with and silently does nothing.
+        m = trimesh.load(p, process=True)
         if not hasattr(m, "vertices") or len(m.vertices) == 0:
             continue
+        m.merge_vertices()
         v = np.asarray(m.vertices, dtype=np.float64)
         f = np.asarray(m.faces, dtype=np.int64)
         if len(f) > TRI_CAP:

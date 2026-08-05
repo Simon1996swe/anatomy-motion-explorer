@@ -25,6 +25,13 @@ import urllib.error
 from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 import trimesh
+import fast_simplification
+
+# Decimate EACH bone separately. Running a global simplifier over the merged
+# mesh destroys small components (the pelvis was reduced to ~500 triangles and
+# thin bones vanished), so every part gets its own triangle budget instead.
+TRI_CAP = int(os.environ.get("TRI_CAP", "2500"))
+TRI_FLOOR = int(os.environ.get("TRI_FLOOR", "150"))
 
 TMP = os.path.join(os.environ.get("TEMP", "/tmp"), "bp3d")
 COMPOSITE = os.path.join(TMP, "composite_parts.txt")
@@ -94,11 +101,20 @@ def apply_transform(v: np.ndarray) -> np.ndarray:
 meshes = []
 for p in paths:
     try:
-        m = trimesh.load(p, process=False)
+        # STL stores every triangle with its own vertices; merge duplicates so
+        # the mesh is properly indexed, otherwise edge-collapse decimation has
+        # no shared edges to work with and silently does nothing.
+        m = trimesh.load(p, process=True)
         if not hasattr(m, "vertices") or len(m.vertices) == 0:
             continue
-        m.vertices = apply_transform(np.asarray(m.vertices))
-        meshes.append(m)
+        m.merge_vertices()
+        v = np.asarray(m.vertices, dtype=np.float64)
+        f = np.asarray(m.faces, dtype=np.int64)
+        target = max(TRI_FLOOR, min(TRI_CAP, len(f)))
+        if len(f) > target:
+            v, f = fast_simplification.simplify(v, f, 1.0 - target / len(f))
+        v = apply_transform(np.asarray(v, dtype=np.float64))
+        meshes.append(trimesh.Trimesh(vertices=v, faces=f, process=False))
     except Exception as exc:  # noqa: BLE001 - skip any unreadable part
         print("skip", p, exc)
 
