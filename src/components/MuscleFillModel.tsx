@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore } from '../store/useStore';
+import { makeToonMaterial, makeOutlineMesh } from '../lib/toonStyle';
 
 /**
  * Every remaining muscle of the muscular system (BodyParts3D, CC BY-SA 2.1 JP)
@@ -23,20 +24,17 @@ export function MuscleFillModel() {
   const showAllMuscles = useStore((s) => s.showAllMuscles);
 
   const object = useMemo(() => {
-    const material = new THREE.MeshStandardMaterial({
-      color: '#9d4a3f',
-      roughness: 0.72,
-      metalness: 0.02,
-    });
+    const material = makeToonMaterial('#c8615a');
     const clone = scene.clone(true);
     clone.traverse((o) => {
       const mesh = o as THREE.Mesh;
       if (!mesh.isMesh) return;
-      mesh.material = material;
       if (!mesh.geometry.getAttribute('normal')) {
         mesh.geometry = mesh.geometry.clone();
         mesh.geometry.computeVertexNormals();
       }
+      mesh.material = material;
+      mesh.add(makeOutlineMesh(mesh, 0.012));
       mesh.raycast = () => {}; // filler context: named groups stay clickable
     });
     return clone;

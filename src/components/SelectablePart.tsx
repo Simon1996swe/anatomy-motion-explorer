@@ -1,6 +1,7 @@
 import { useMemo, useRef, type ReactNode } from 'react';
 import * as THREE from 'three';
 import { useStore } from '../store/useStore';
+import { makeToonMaterial } from '../lib/toonStyle';
 import type { StructureCategory } from '../types/anatomy';
 
 type Props = {
@@ -33,15 +34,7 @@ export function SelectablePart({
   const isSelected = selectable && selectedId === structureId;
   const isHovered = selectable && hoveredId === structureId;
 
-  const material = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color,
-        roughness: 0.55,
-        metalness: 0.05,
-      }),
-    [color],
-  );
+  const material = useMemo(() => makeToonMaterial(color), [color]);
 
   material.emissive = new THREE.Color(isSelected ? '#fde047' : isHovered ? '#38bdf8' : '#000000');
   material.emissiveIntensity = isSelected ? 0.7 : isHovered ? 0.35 : 0;

@@ -4,6 +4,7 @@ import { useThree, type ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useStore } from '../store/useStore';
 import { nodeNameToStructureId } from '../data/structures';
+import { makeToonMaterial, makeOutlineMesh } from '../lib/toonStyle';
 
 /**
  * Renders a glTF whose meshes are named anatomical groups. Each group gets its
@@ -21,7 +22,6 @@ type Props = {
   fallbackColor: string;
   /** Optional transparency (used for fascia sheets). */
   opacity?: number;
-  roughness?: number;
 };
 
 /** Strips the suffix three.js appends to duplicated node names. */
@@ -40,7 +40,6 @@ export function GroupedSystemModel({
   colors,
   fallbackColor,
   opacity = 1,
-  roughness = 0.6,
 }: Props) {
   const { scene } = useGLTF(url);
   const invalidate = useThree((s) => s.invalidate);
@@ -83,20 +82,18 @@ export function GroupedSystemModel({
       if (dir.lengthSq() < 1e-6) dir.set(0, 0, 1);
       dirs.set(mesh, dir.normalize());
 
-      // Each mesh gets its own material so it can be highlighted individually.
-      mesh.material = new THREE.MeshStandardMaterial({
-        color: colors[key] ?? fallbackColor,
-        roughness,
-        metalness: 0.02,
-        transparent: opacity < 1,
-        opacity,
-        side: opacity < 1 ? THREE.DoubleSide : THREE.FrontSide,
-      });
-
       if (!mesh.geometry.getAttribute('normal')) {
         mesh.geometry = mesh.geometry.clone();
         mesh.geometry.computeVertexNormals();
       }
+
+      // Each mesh gets its own cel-shaded material so it can be highlighted
+      // individually, plus an ink outline for the illustrated look.
+      mesh.material = makeToonMaterial(colors[key] ?? fallbackColor, {
+        opacity,
+        doubleSided: opacity < 1,
+      });
+      if (opacity >= 1) mesh.add(makeOutlineMesh(mesh, 0.012));
 
       if (structureId) {
         const list = index.get(structureId) ?? [];
@@ -110,7 +107,7 @@ export function GroupedSystemModel({
     byStructure.current = index;
     explodeDirs.current = dirs;
     return clone;
-  }, [scene, colors, fallbackColor, opacity, roughness]);
+  }, [scene, colors, fallbackColor, opacity]);
 
   // Pull structures away from the body axis.
   useEffect(() => {
@@ -127,7 +124,7 @@ export function GroupedSystemModel({
       const isSelected = structureId === selectedId;
       const isHovered = structureId === hoveredId;
       for (const mesh of meshes) {
-        const m = mesh.material as THREE.MeshStandardMaterial;
+        const m = mesh.material as THREE.MeshToonMaterial;
         m.emissive.set(isSelected ? '#fde047' : isHovered ? '#38bdf8' : '#000000');
         m.emissiveIntensity = isSelected ? 0.65 : isHovered ? 0.3 : 0;
         // Selection is also shown by a scale bump, so colour is never the only

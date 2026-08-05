@@ -25,7 +25,6 @@ export function FasciaModel() {
       colors={FASCIA_COLORS}
       fallbackColor="#e2dcc6"
       opacity={0.85}
-      roughness={0.85}
     />
   );
 }

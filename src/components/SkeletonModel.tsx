@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore } from '../store/useStore';
+import { makeToonMaterial, makeOutlineMesh } from '../lib/toonStyle';
 
 /**
  * Whole-body skeleton context (BodyParts3D, CC BY-SA 2.1 JP), built in the same
@@ -23,20 +24,17 @@ export function SkeletonModel() {
   const showBone = useStore((s) => s.layers.bone);
 
   const object = useMemo(() => {
-    const material = new THREE.MeshStandardMaterial({
-      color: '#e8e2d2',
-      roughness: 0.75,
-      metalness: 0.02,
-    });
+    const material = makeToonMaterial('#f2ede0');
     const clone = scene.clone(true);
     clone.traverse((o) => {
       const mesh = o as THREE.Mesh;
       if (mesh.isMesh) {
-        mesh.material = material;
         if (!mesh.geometry.getAttribute('normal')) {
           mesh.geometry = mesh.geometry.clone();
           mesh.geometry.computeVertexNormals();
         }
+        mesh.material = material;
+        mesh.add(makeOutlineMesh(mesh, 0.014));
         mesh.raycast = () => {}; // non-selectable context
       }
     });

@@ -87,12 +87,12 @@ export function Viewer() {
       dpr={[1, 1.75]}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
     >
-      <color attach="background" args={['#0b1220']} />
-      <ambientLight intensity={0.9} />
-      <directionalLight position={[5, 6, 5]} intensity={1.4} />
-      <directionalLight position={[-4, 2, -3]} intensity={0.6} />
-      <directionalLight position={[0, -3, 4]} intensity={0.35} />
-      <hemisphereLight args={['#cfe0ff', '#20293d', 0.7]} />
+      {/* Illustrated look: flat lighting so cel shading reads as clean bands
+          rather than smooth gradients, on a soft neutral backdrop. */}
+      <color attach="background" args={['#111a2b']} />
+      <ambientLight intensity={1.5} />
+      <directionalLight position={[4, 7, 6]} intensity={1.5} />
+      <directionalLight position={[-5, 2, -4]} intensity={0.5} />
       <BackgroundDeselect />
       {/* Whole-body context meshes; failure here shouldn't break the arm. */}
       <ModelErrorBoundary fallback={null}>
